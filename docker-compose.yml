@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  ad-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ads-system
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./checkpoints:/app/checkpoints
+      - ./logs:/app/logs
+    environment:
+      - PYTHONUNBUFFERED=1
+      - RQVAE_PATH=/app/checkpoints/rqvae/best_model.pt
+      - GENERATIVE_PATH=/app/checkpoints/generative/best_model.pt
+      - RANKING_PATH=/app/checkpoints/ranking/best_model.pt
+      - TRIE_PATH=/app/data/semantic_trie.pkl
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Redis for caching (optional)
+  redis:
+    image: redis:7-alpine
+    container_name: ads-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Prometheus for monitoring (optional)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: ads-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    restart: unless-stopped
+
+  # Grafana for dashboards (optional)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: ads-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    restart: unless-stopped
+
+volumes:
+  grafana-storage:

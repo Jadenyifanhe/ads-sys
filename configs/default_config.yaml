@@ -1,0 +1,127 @@
+# Default Configuration for Generative Ads System
+
+# Model Configurations
+models:
+  rqvae:
+    text_dim: 768
+    image_dim: 512
+    category_vocab_size: 100
+    embedding_dim: 256
+    num_quantizers: 4
+    codebook_size: 256
+    hidden_dims: [1024, 512, 256]
+    dropout: 0.1
+
+  generative_retrieval:
+    num_quantizers: 4
+    codebook_size: 256
+    embed_dim: 512
+    num_encoder_layers: 6
+    num_decoder_layers: 6
+    num_heads: 8
+    num_demographics: 50
+    max_history_len: 100
+    dropout: 0.1
+
+  ranking:
+    num_user_categorical: 10
+    user_categorical_vocab_sizes: [100, 50, 20, 10, 5, 200, 50, 30, 100, 10]
+    num_user_continuous: 20
+    semantic_embed_dim: 256
+    num_ad_categorical: 5
+    ad_categorical_vocab_sizes: [100, 1000, 50, 20, 10]
+    num_ad_continuous: 10
+    tower_embed_dim: 64
+    tower_hidden_dims: [256, 128]
+    tower_output_dim: 128
+    num_tasks: 4
+    num_experts: 4
+    expert_dim: 128
+    dropout: 0.1
+
+# Training Configurations
+training:
+  rqvae:
+    batch_size: 128
+    learning_rate: 0.0001
+    num_epochs: 50
+    weight_decay: 0.01
+    gradient_clip: 1.0
+
+  generative_retrieval:
+    batch_size: 64
+    learning_rate: 0.0001
+    num_epochs: 100
+    weight_decay: 0.01
+    gradient_clip: 1.0
+    label_smoothing: 0.1
+
+  ranking:
+    batch_size: 256
+    learning_rate: 0.001
+    num_epochs: 30
+    weight_decay: 0.01
+    gradient_clip: 1.0
+    task_weights:
+      click: 1.0
+      conversion: 2.0
+      skip: 0.5
+      view_time: 0.5
+
+# Serving Configurations
+serving:
+  num_retrieval_candidates: 50
+  num_ranking_candidates: 50
+  num_final_ads: 3
+  beam_size: 10
+  device: cuda  # or cpu
+  batch_size: 1
+  timeout_ms: 100
+
+# Auction Configurations
+auction:
+  reserve_price: 0.01
+  use_quality_score: true
+  quality_weight: 0.5
+
+# Budget Pacing Configurations
+budget_pacing:
+  default_strategy: even  # even, asap, smart
+  update_interval_seconds: 300
+  min_spend_rate: 0.02
+  max_spend_rate: 0.15
+
+# Feedback Loop Configurations
+feedback:
+  event_buffer_size: 10000
+  online_learning_enabled: true
+  update_frequency: 100
+  batch_size: 64
+
+# Data Paths
+paths:
+  data_dir: ./data
+  checkpoint_dir: ./checkpoints
+  log_dir: ./logs
+  model_registry: ./model_registry
+
+  # Model checkpoints
+  rqvae_checkpoint: ./checkpoints/rqvae/best_model.pt
+  generative_checkpoint: ./checkpoints/generative/best_model.pt
+  ranking_checkpoint: ./checkpoints/ranking/best_model.pt
+  trie_path: ./data/semantic_trie.pkl
+
+# Monitoring Configurations
+monitoring:
+  enable_tensorboard: true
+  enable_wandb: false
+  enable_prometheus: true
+  log_level: INFO
+  metrics_port: 9090
+
+# System Configurations
+system:
+  num_workers: 4
+  pin_memory: true
+  use_amp: false  # Automatic Mixed Precision
+  distributed: false
