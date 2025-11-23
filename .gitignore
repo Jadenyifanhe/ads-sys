@@ -42,8 +42,8 @@ ENV/
 *.pt
 *.onnx
 
-# Data
-data/
+# Data (exclude root data dir but not src/data)
+/data/
 *.csv
 *.json
 *.pkl
