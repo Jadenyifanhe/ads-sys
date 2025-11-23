@@ -12,6 +12,9 @@ numpy>=1.24.0
 # Vector Quantization
 vector-quantize-pytorch>=1.12.0
 
+# Vector Search (for Offline ANN)
+faiss-cpu>=1.7.4  # Use faiss-gpu for GPU support
+
 # Data Processing
 pandas>=2.0.0
 pyarrow>=12.0.0
